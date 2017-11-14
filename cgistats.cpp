@@ -10,7 +10,7 @@
 const int MAX_BYTES = 1000000;
 
 void printReport(const Population&, const Sample&);
-void printTable(int [], float, float, float, float);
+void printTable(int [], float, float, float, float, unsigned);
 static std::string floattoString(float, unsigned);
 
 int main()
@@ -82,6 +82,7 @@ int main()
 	devTables tables(population);
    tables.computeTables();
    // get some data ready
+   unsigned n = population.getSize();
    float min = tables.getMin();
    float max = tables.getMax();
    float mean = tables.getMean();
@@ -90,15 +91,15 @@ int main()
    float mad = tables.getMdnDev();
    float aad = tables.getMeanDev();
    // display tables
-   // write mean deviations report
-   std::cout << "<p>mean deviations</p>" << std::endl;
-   printTable(tables.meanDevs, mean, aad, min, max);
    // write standard deviations report
    std::cout << "<p>standard deviations</p>" << std::endl;
-   printTable(tables.stdDevs, mean, std, min, max);
+   printTable(tables.stdDevs, mean, std, min, max, n);
    // write median deviations report
    std::cout << "<p>median deviations</p>" << std::endl;
-   printTable(tables.mdnDevs, mdn, mad, min, max);   
+   printTable(tables.mdnDevs, mdn, mad, min, max, n);   
+   // write mean deviations report
+   std::cout << "<p>mean deviations</p>" << std::endl;
+   printTable(tables.meanDevs, mean, aad, min, max, n);   
 	std::cout << "</body>\n";
 	std::cout << "</html>";
 	return 0;
@@ -127,9 +128,9 @@ void printReport(const Population& pop, const Sample& sam)
 }
 
 // display deviation table
-void printTable(int table[], float m, float dev, float min, float max)
+void printTable(int table[], float m, float dev, float min, float max, unsigned n)
 {
-   int j = 0;
+   int j = 0, first, last;
    float glb = min, lub;
    // find the start of the data
    lub = m - 3*dev;
@@ -137,24 +138,37 @@ void printTable(int table[], float m, float dev, float min, float max)
       lub += dev;
       ++j;
    }
+   first = j;
+   // find end of the data
+   j = 8;
+   glb = m + 3*dev;
+   while (glb > max) {
+      glb -= dev;
+      --j;
+   }
+   last = j;
+   // std::cout << "<p>" << first << ' ' << last << "</p>" << std::endl;
    std::cout << "<table class=\"right-nowrap\">\n";
-   // std::cout << "<table>\n";
-   std::cout << "<tr><th>glb</th><th>lub</th><th>n</th></tr>\n";
+   // std::cout << "<table>" << std::endl;
+   // output header row
    std::cout << "<tr>";
-   for (int i = j; i < 8 && glb < max; i++) {
-      std::cout << "<tr>";
-      // std::string glbstr = floattoString(glb, 6);
-      // std::string lubstr = floattoString(lub, 6);
-      // std::cout << "<td>" << glbstr << "</td><td>" << lubstr << "</td>";
-      std::cout << std::fixed << std::setprecision(6) << "<td>" << glb << "</td>";
-      std::cout << std::fixed << std::setprecision(6) << "<td>" << lub << "</td>";
-      std::cout << "<td>" << table[i] << "</td>";
-      glb = lub;
-      lub += dev;
-      if (lub > max) lub = max;
-      // glb += .000001;
-   }   
-   std::cout << "</tr>\n";
+   std::cout << "<th>x[i] <= 1</th>";
+   for (int i = 1; i < 3; i++) 
+      std::cout << "<th>" << i << " < x[i] <= " << i + 1 << "</th>"; 
+   std::cout << "<th>3 < x[i]</th>"; 
+   std::cout << "</tr>" << std::endl;
+   // output count row
+   std::cout << "<tr>";
+   for (int i = 0; i < 4; i++)
+      std::cout << "<td>" << table[i] << "</td>";    
+   std::cout << "</tr>" << std::endl;
+   // output % row
+   std::cout << "<tr>";
+   for (int i = 0; i < 4; i++) {
+      float p = 100 * (float)table[i] / (float)n;
+      std::cout << "<td>" << floattoString(p, 2) << "%</td>";    
+   }
+   std::cout << "</tr>" << std::endl;
    std::cout << "</table>" << std::endl;
 }
 

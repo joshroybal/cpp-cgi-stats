@@ -248,35 +248,20 @@ void devTables::computeTables()
 void devTables::compute_standard_deviations()
 {
    int idx;
-   float m = mean(), sigma = std(), glb, lub;
+   float m = mean(), sigma = std();
    // clear table
-   for (int i = 0; i < 8; i++) stdDevs[i] = 0;
+   for (int i = 0; i < 4; i++) stdDevs[i] = 0;
    // compute table
    for (int i = 0; i < n; i++) {
-      if (x[i] > m) {   // x[i] lives in the right tail
-         glb = m;
-         lub = glb + sigma;
-         idx = 4;
-         for (int j = 0; j < 3; j++) {
-            if (x[i] > glb && x[i] <= lub) ++(stdDevs[idx]);
-            glb += sigma;
-            lub += sigma;
-            ++idx;
-         }
-         if (x[i] > glb) ++(stdDevs[7]);
-      }
-      else { // x[i] lives in the left tail
-         glb = m - sigma;
-         lub = m;
-         idx = 3;
-         for (int j = 0; j < 3; j++) {
-            if (x[i] > glb && x[i] <= lub) ++(stdDevs[idx]);
-            glb -= sigma;
-            lub -= sigma;
-            --idx;
-         }
-         if (x[i] < lub) ++(stdDevs[0]);
-      }
+      float dev = std::abs(x[i] - m);
+      if (dev <= sigma)
+         ++(stdDevs[0]);
+      else if (dev <= 2*sigma && dev > sigma)
+         ++(stdDevs[1]);
+      else if (dev <= 3*sigma && dev > 2*sigma)
+         ++(stdDevs[2]);
+      else
+         ++(stdDevs[3]);
    }
 }
 
@@ -284,71 +269,41 @@ void devTables::compute_standard_deviations()
 void devTables::compute_median_deviations()
 {
    int idx;
-   float mdn = median(x), mad = median_deviation(), glb, lub;
+   float mdn = median(x), mad = median_deviation();
    // clear table
-   for (int i = 0; i < 8; i++) mdnDevs[i] = 0;
+   for (int i = 0; i < 4; i++) mdnDevs[i] = 0;
    // compute table
    for (int i = 0; i < n; i++) {
-      if (x[i] > mdn) {   // x[i] lives in the right tail
-         glb = mdn;
-         lub = glb + mad;
-         idx = 4;
-         for (int j = 0; j < 3; j++) {
-            if (x[i] > glb && x[i] <= lub) ++(mdnDevs[idx]);
-            glb += mad;
-            lub += mad;
-            ++idx;
-         }
-         if (x[i] > glb) ++(mdnDevs[7]);
-      }
-      else { // x[i] lives in the left tail
-         glb = mdn - mad;
-         lub = mdn;
-         idx = 3;
-         for (int j = 0; j < 3; j++) {
-            if (x[i] > glb && x[i] <= lub) ++(mdnDevs[idx]);
-            glb -= mad;
-            lub -= mad;
-            --idx;
-         }
-         if (x[i] < lub) ++(mdnDevs[0]);
-      }
-   }   
+      float dev = std::abs(x[i] - mdn);
+      if (dev <= mad)
+         ++(mdnDevs[0]);
+      else if (dev <= 2*mad && dev > mad)
+         ++(mdnDevs[1]);
+      else if (dev <= 3*mad && dev > 2*mad)
+         ++(mdnDevs[2]);
+      else
+         ++(mdnDevs[3]);
+   }
 }
 
 // compute mean deviations table
 void devTables::compute_mean_deviations()
 {
    int idx;
-   float m = mean(), aad = mean_deviation(), glb, lub;
+   float m = mean(), aad = mean_deviation();
    // clear table
-   for (int i = 0; i < 8; i++) meanDevs[i] = 0;
+   for (int i = 0; i < 4; i++) meanDevs[i] = 0;
    // compute table
    for (int i = 0; i < n; i++) {
-      if (x[i] > m) {   // x[i] lives in the right tail
-         glb = m;
-         lub = glb + aad;
-         idx = 4;
-         for (int j = 0; j < 3; j++) {
-            if (x[i] > glb && x[i] <= lub) ++(meanDevs[idx]);
-            glb += aad;
-            lub += aad;
-            ++idx;
-         }
-         if (x[i] > glb) ++(meanDevs[7]);
-      }
-      else { // x[i] lives in the left tail
-         glb = m - aad;
-         lub = m;
-         idx = 3;
-         for (int j = 0; j < 3; j++) {
-            if (x[i] > glb && x[i] <= lub) ++(meanDevs[idx]);
-            glb -= aad;
-            lub -= aad;
-            --idx;
-         }
-         if (x[i] < lub) ++(meanDevs[0]);
-      }
+      float dev = std::abs(x[i] - m);
+      if (dev <= aad)
+         ++(meanDevs[0]);
+      else if (dev <= 2*aad && dev > aad)
+         ++(meanDevs[1]);
+      else if (dev <= 3*aad && dev > 2*aad)
+         ++(meanDevs[2]);
+      else
+         ++(meanDevs[3]);
    }
 }
 

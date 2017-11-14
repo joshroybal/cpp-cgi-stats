@@ -69,10 +69,10 @@ class devTables : public virtual Sample {
       // Sample object instances.
       // calling Statistics base contructor initializes n to population size
       devTables(const Population& p) : Statistics(p.getSize()) { p.unloadData(x); }
-      const static unsigned no_slices = 8;
-      int stdDevs[no_slices];
-      int mdnDevs[no_slices];
-      int meanDevs[no_slices];
+      const static unsigned no = 4;
+      int stdDevs[no];
+      int mdnDevs[no];
+      int meanDevs[no];
       void computeTables();
    private:
       void compute_standard_deviations();
