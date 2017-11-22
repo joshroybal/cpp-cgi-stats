@@ -89,5 +89,6 @@ void printHeader()
 void printFooter()
 {
     std::cout << "<div><a href=\"/index.php\">Home</a> | <a href=\"/cppstats.html\">Back</a></div>\n";
-    std::cout << "<footer><p>CopyLeft (c) 2017 Josh Roybal - All Wrongs Reserved.</p></footer>\n";   
+    std::cout << "<footer><p>CopyLeft (c) 2017 Josh Roybal - All Wrongs Reserved.</p></footer>\n";
+    std::cout << "</html>";
 }
