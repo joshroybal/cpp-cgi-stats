@@ -23,7 +23,7 @@ class Stats {
       float computeCV() const;
       void computeTables();
       void displayTables() const;
-		void htmlTables() const;
+      void htmlTables() const;
    protected:
       int n;
       std::vector<float> x;
@@ -47,7 +47,7 @@ class Stats {
       float coefficient_of_variation() const;
       void compute_tables(float[][10], float[][10], float, float);
       void display_tables(const float[][10], const float[][10]) const;
-		void html_tables(const float[][10], const float[][10]) const;
+      void html_tables(const float[][10], const float[][10]) const;
 };
 
 // population derived class
