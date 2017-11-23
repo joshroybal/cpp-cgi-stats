@@ -137,9 +137,9 @@ float Stats::quick_select(const std::vector<float>& x, int n, int k) const
 {
    int i, j, left = 0, right = n - 1;
    float pivot;
-   int* idx = new int[n];  // index array
+   std::vector<int> idx; // index vector
    // initialize index vector to natural order (zero indexed)
-   for (i = 0; i < n; i++) idx[i] = i;
+   for (i = 0; i < n; i++) idx.push_back(i);
    while (left < right) {
       pivot = x[idx[k]];
       i = left;
@@ -158,7 +158,8 @@ float Stats::quick_select(const std::vector<float>& x, int n, int k) const
       if (j < k) left = i;
       if (k < i) right = j;
    }
-   return x[idx[k]];
+   float result = x[idx[k]];
+   return result;
 }
 
 // method finds minimum
