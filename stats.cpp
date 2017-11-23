@@ -127,8 +127,8 @@ float Stats::mean(const std::vector<float>& x, int n) const
 {
    float s = 0;
    for (int i = 0; i < n; i++)
-      s += x[i];
-   return s/n;
+      s = (i * s + x[i]) / (i + 1);
+   return s;
 }
 
 // method returns kth element of x
@@ -164,21 +164,19 @@ float Stats::quick_select(const std::vector<float>& x, int n, int k) const
 // method finds minimum
 float Stats::minimum() const
 {
-   float min = x[0];
+   float low = x[0];
    for (int i = 1; i < n; i++)
-      if (x[i] < min) min = x[i];
-   return min;
-   // return quick_select(x, n, 0);
+      if (x[i] < low) low = x[i];
+   return low;
 }
 
 // method finds maximum
 float Stats::maximum() const
 {
-   float max = x[0];
+   float high = x[0];
    for (int i = 1; i < n; i++)
-      if (x[i] > max) max = x[i];
-   return max;
-   // return quick_select(x, n, n-1);
+      if (x[i] > high) high = x[i];
+   return high;
 }
 
 // method returns median
@@ -329,7 +327,7 @@ void Stats::html_tables(const float z_right[][10], const float z_left[][10]) con
          std::cout << "<td>" << std::fixed << std::setprecision(5) << z_right[i][j] << "</td>";
       std::cout << "</tr>\n";
    }
-   std::cout << "</table>\n" << std::endl;
+   std::cout << "</table>\n";
 
    // display right tail table
    // print header row
@@ -345,7 +343,7 @@ void Stats::html_tables(const float z_right[][10], const float z_left[][10]) con
          std::cout << "<td>" << std::fixed << std::setprecision(5) << z_left[i][j] << "</td>";
       std::cout << "</tr>\n";
    }
-   std::cout << "</table>\n" << std::endl;
+   std::cout << "</table>\n";
 
    // display unity table - has nobody thought of this before??
    // print header row
@@ -363,7 +361,7 @@ void Stats::html_tables(const float z_right[][10], const float z_left[][10]) con
          std::cout << "<td>" << std::fixed << std::setprecision(5) << z_right[i][j]+z_left[i][j] << "</td>";
       std::cout << "</tr>\n";
    }
-   std::cout << "</table>\n" << std::endl;
+   std::cout << "</table>\n";
 }
 
 // population class public methods - constructors and accessors
@@ -373,11 +371,11 @@ void Stats::html_tables(const float z_right[][10], const float z_left[][10]) con
 // method computes population variance
 float Pop::var() const
 {
-   float s = 0;
    float m = mean(x, n);
+   float s = 0;
    for (int i = 0; i < n; i++)
-      s += (x[i]-m)*(x[i]-m);
-   return s / n;
+      s = (i * s + pow((x[i] - m), 2)) / (i + 1);
+   return s;
 }
 
 // method computes population standard variation
@@ -400,11 +398,11 @@ void Sample::load(const std::vector<float>& v, int no)
 // method computes population variance
 float Sample::var() const
 {
-   float s = 0;
    float m = mean(x, n);
+   float s = 0;
    for (int i = 0; i < n; i++)
-      s += (x[i]-m)*(x[i]-m);
-   return s/(n-1);
+      s = (i * s + pow((x[i] - m), 2)) / (i + 1);
+   return ((float)n / (float)(n - 1)) * s;
 }
 
 // method computes population standard variation

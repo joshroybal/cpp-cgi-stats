@@ -59,7 +59,7 @@ class Pop : public virtual Stats {
 };
 
 // sample derived class
-// overloaded load function makes tables automatically when object instantiated
+// overloaded load function makes tables automatically when called
 class Sample : public virtual Stats {
    public:
       void load(const std::vector<float>&, int); // overload for tables

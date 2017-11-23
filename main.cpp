@@ -30,7 +30,7 @@ int main()
    }
    int n = x.size();
    if (n <= 0) { // error trap for less data than we want to allow
-      std::cerr << "<p>I'm sorry Dave, I'm afraid I can't do that.</p>\n";
+      std::cout << "<p>I'm sorry Dave, I'm afraid I can't do that.</p>\n";
       printFooter();  
       return 1;
    }   
@@ -38,8 +38,8 @@ int main()
    // processing
    Pop p;
    Sample s;
-   Stats *pp = &p;
-   Stats *ps = &s;
+   Stats* pp = &p;
+   Stats* ps = &s;
    pp->load(x, n);
    ps->load(x, n);
    // output
@@ -63,9 +63,7 @@ int main()
    float t2 = clock();
    std::cout << "<p>processing time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds</p>\n";
    // output cumulative from central tendency tables - we shall use sample std
-   // ps->displayTables();
    ps->htmlTables();
-   std::cout << "<p>processing time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds</p>\n";
    printFooter();
    return 0;
 }
