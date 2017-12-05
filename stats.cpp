@@ -1,16 +1,17 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <cstdlib>
 #include "stats.hpp"
 
 // stats class public methods - constructors, destructors and accessors
 
 // load array into object
-void Stats::load(const std::vector<float>& v, int no)
+void Stats::load(const std::vector<float>& v)
 {
-   n = no;
-   for (int i = 0; i < n; i++)
-      x.push_back(v[i]);
+   n = v.size();
+   x.clear();
+   x = v;
 }
 
 // method accesses size n
@@ -31,10 +32,22 @@ float Stats::computeVar() const
    return var();
 }
 
+// overloaded method accesses variance - mean already processed
+float Stats::computeVar(float m) const
+{
+   return var(m);
+}
+
 // method accesses standard deviation
 float Stats::computeStd() const
 {
    return std();
+}
+
+// overloaded method accesses standard deviation - mean already processed
+float Stats::computeStd(float m) const
+{
+   return std(m);
 }
 
 // method accesses minimum
@@ -61,8 +74,20 @@ float Stats::computeMedianDev() const
    return median_dev();
 }
 
+// overloaded method accesses median deviation
+float Stats::computeMedianDev(float mdn) const
+{
+   return median_dev(mdn);
+}
+
 // method accesses mean deviation
 float Stats::computeMeanDev() const
+{
+   return mean_dev();
+}
+
+// overloaded method accesses mean deviation
+float Stats::computeMeanDev(float m) const
 {
    return mean_dev();
 }
@@ -73,10 +98,22 @@ float Stats::computeSkewness() const
    return skewness();
 }
 
+// overloaded method accesses skewness
+float Stats::computeSkewness(float m) const
+{
+   return skewness(m);
+}
+
 // method accesses median skewness
 float Stats::computeMedianSkew() const
 {
    return median_skew();
+}
+
+// overloaded method accesses median skewnewss
+float Stats::computeMedianSkew(float m, float mdn) const
+{
+   return median_skew(m, mdn);
 }
 
 // method accesses coefficient of variation
@@ -90,33 +127,33 @@ void Stats::computeTables()
 {
    float m = computeMean();
    float mdn = computeMedian();
-   float std = computeStd();
-   float mad = computeMedianDev();
-   float aad = computeMeanDev();
+   float std = computeStd(m);
+   float mad = computeMedianDev(mdn);
+   float aad = computeMeanDev(m);
    compute_tables(standard_right, standard_left, m, std);
    compute_tables(median_right, median_left, mdn, mad);
    compute_tables(mean_right, mean_left, m, aad);
 }
 
 // method displays cumulative from center tables
-void Stats::displayTables() const
+void Stats::displayTables(std::ofstream& ofstr) const
 {
-   std::cout << "\n standard deviation tables - cumulative from mean";
-   display_tables(standard_right, standard_left);
-   std::cout << "\n median deviation tables - cumulative from median";
-   display_tables(median_right, median_left);
-   std::cout << "\n mean deviation tables - cumulative from mean";
-   display_tables(mean_right, mean_left);
+   ofstr << "\n standard deviation tables - cumulative from mean";
+   display_tables(ofstr, standard_right, standard_left);
+   ofstr << "\n median deviation tables - cumulative from median";
+   display_tables(ofstr, median_right, median_left);
+   ofstr << "\n mean deviation tables - cumulative from mean";
+   display_tables(ofstr, mean_right, mean_left);
 }
 
 // method displays cumulative from center tables - html format
 void Stats::htmlTables() const
 {
-   std::cout << "\n<p>standard deviation tables - cumulative from mean</p>";
+   std::cout << "<p>standard deviation tables - cumulative from mean</p>\n";
    html_tables(standard_right, standard_left);
-   std::cout << "\n<p>median deviation tables - cumulative from median</p>";
+   std::cout << "<p>median deviation tables - cumulative from median</p>\n";
    html_tables(median_right, median_left);
-   std::cout << "\n<p>mean deviation tables - cumulative from mean</p>";
+   std::cout << "<p>mean deviation tables - cumulative from mean</p>\n";
    html_tables(mean_right, mean_left);
 }
 
@@ -127,8 +164,8 @@ float Stats::mean(const std::vector<float>& x, int n) const
 {
    float s = 0;
    for (int i = 0; i < n; i++)
-      s = (i * s + x[i]) / (i + 1);
-   return s;
+      s += x[i];
+   return s/n;
 }
 
 // method returns kth element of x
@@ -137,7 +174,7 @@ float Stats::quick_select(const std::vector<float>& x, int n, int k) const
 {
    int i, j, left = 0, right = n - 1;
    float pivot;
-   std::vector<int> idx; // index vector
+   std::vector<int> idx;   // index vector
    // initialize index vector to natural order (zero indexed)
    for (i = 0; i < n; i++) idx.push_back(i);
    while (left < right) {
@@ -165,19 +202,19 @@ float Stats::quick_select(const std::vector<float>& x, int n, int k) const
 // method finds minimum
 float Stats::minimum() const
 {
-   float low = x[0];
+   float min = x[0];
    for (int i = 1; i < n; i++)
-      if (x[i] < low) low = x[i];
-   return low;
+      if (x[i] < min) min = x[i];
+   return min;
 }
 
 // method finds maximum
 float Stats::maximum() const
 {
-   float high = x[0];
+   float max = x[0];
    for (int i = 1; i < n; i++)
-      if (x[i] > high) high = x[i];
-   return high;
+      if (x[i] > max) max = x[i];
+   return max;
 }
 
 // method returns median
@@ -200,10 +237,26 @@ float Stats::median_dev() const
    return median(abs_devs, n);
 }
 
+// overloaded method computes median deviation - median already processed
+float Stats::median_dev(float mdn) const
+{
+   std::vector<float> abs_devs;
+   for (int i = 0; i < n; i++) abs_devs.push_back( std::abs(x[i]-mdn) );
+   return median(abs_devs, n);
+}
+
 // method computes mean deviation
 float Stats::mean_dev() const
 {
    float m = mean(x, n);
+   std::vector<float> abs_devs;
+   for (int i = 0; i < n; i++) abs_devs.push_back( std::abs(x[i]-m) );
+   return mean(abs_devs, n);
+}
+
+// overloaded method computes mean deviation - mean already processed
+float Stats::mean_dev(float m) const
+{
    std::vector<float> abs_devs;
    for (int i = 0; i < n; i++) abs_devs.push_back( std::abs(x[i]-m) );
    return mean(abs_devs, n);
@@ -219,10 +272,27 @@ float Stats::skewness() const
    return s / pow(std(), 3);
 }
 
+// overloaded method computes skewness - mean already processed
+float Stats::skewness(float m) const
+{
+   float s = 0;
+   for (int i = 0; i < n; i++)
+      s = ((i * s) + pow(x[i] - m, 3)) / (i + 1);
+   return s / pow(std(), 3);
+}
+
 // method computes median skewness - Pearson's second skewness coefficient
 float Stats::median_skew() const
 {
    return 3*(mean(x,n)-median(x,n))/std();
+}
+
+// overloaded method computes median skewness
+// Pearson's second skewness coefficient
+// mean and median already processed
+float Stats::median_skew(float m, float mdn) const
+{
+   return 3*(m-mdn)/std(m);
 }
 
 // method computes coefficient of variation
@@ -236,9 +306,8 @@ void Stats::compute_tables(float z_right[][10], float z_left[][10], float avg, f
 {
    int right_counter[41][10];
    int left_counter[41][10];
-   std::vector<float> z;
-   for (int i = 0; i < n; i++)
-      z.push_back( (avg-x[i])/dev );
+   std::vector<float> z(n);
+   for (int i = 0; i < n; i++) z[i] = (avg-x[i])/dev; 
    // initialize counter arrays to all zeros
    for (int i = 0; i < 41; i++)
       for (int j = 0; j < 10; j++)
@@ -268,46 +337,46 @@ void Stats::compute_tables(float z_right[][10], float z_left[][10], float avg, f
 }
 
 // method displays cumulative from central tendency tables
-void Stats::display_tables(const float z_right[][10], const float z_left[][10]) const
+void Stats::display_tables(std::ofstream& ofstr, const float z_right[][10], const float z_left[][10]) const
 {
    // display right tail table
    // print header row
-   std::cout << "\n right tail" << std::endl;
-   std::cout << "  z ";
+   ofstr << "\n right tail" << std::endl;
+   ofstr << "  z ";
    for (int j = 0; j < 10; j++)
-      std::cout << " +" << std::fixed << std::setprecision(2) << float(j)/float(100);
-   std::cout << std::endl;
+      ofstr << " +" << std::fixed << std::setprecision(2) << float(j)/float(100);
+   ofstr << std::endl;
    for (int i = 0; i < 41; i++) {
-      std::cout << " " << std::fixed << std::setprecision(1) << float(i)/float(10);
+      ofstr << " " << std::fixed << std::setprecision(1) << float(i)/float(10);
       for (int j = 0; j < 10; j++)
-         std::cout << " " << std::fixed << std::setprecision(3) << z_right[i][j];
-      std::cout << std::endl;
+         ofstr << " " << std::fixed << std::setprecision(3) << z_right[i][j];
+      ofstr << std::endl;
    }
    // display left tail table
    // print header row
-   std::cout << "\n left tail" << std::endl;
-   std::cout << "  z ";
+   ofstr << "\n left tail" << std::endl;
+   ofstr << "  z ";
    for (int j = 0; j < 10; j++)
-      std::cout << " +" << std::fixed << std::setprecision(2) << float(j)/float(100);
-   std::cout << std::endl;
+      ofstr << " +" << std::fixed << std::setprecision(2) << float(j)/float(100);
+   ofstr << std::endl;
    for (int i = 0; i < 41; i++) {
-      std::cout << " " << std::fixed << std::setprecision(1) << float(i)/float(10);
+      ofstr << " " << std::fixed << std::setprecision(1) << float(i)/float(10);
       for (int j = 0; j < 10; j++)
-         std::cout << " " << std::fixed << std::setprecision(3) << z_left[i][j];
-      std::cout << std::endl;
+         ofstr << " " << std::fixed << std::setprecision(3) << z_left[i][j];
+      ofstr << std::endl;
    }
    // display unity table - has nobody thought of this before??
    // print header row
-   std::cout << "\n right and left tails" << std::endl;
-   std::cout << "  z ";
+   ofstr << "\n right and left tails" << std::endl;
+   ofstr << "  z ";
    for (int j = 0; j < 10; j++)
-      std::cout << " +" << std::fixed << std::setprecision(2) << float(j)/float(100);
-   std::cout << std::endl;
+      ofstr << " +" << std::fixed << std::setprecision(2) << float(j)/float(100);
+   ofstr << std::endl;
    for (int i = 0; i < 41; i++) {
-      std::cout << " " << std::fixed << std::setprecision(1) << float(i)/float(10);
+      ofstr << " " << std::fixed << std::setprecision(1) << float(i)/float(10);
       for (int j = 0; j < 10; j++)
-         std::cout << " " << std::fixed << std::setprecision(3) << z_right[i][j]+z_left[i][j];
-      std::cout << std::endl;
+         ofstr << " " << std::fixed << std::setprecision(3) << z_right[i][j]+z_left[i][j];
+      ofstr << std::endl;
    }
 }
 
@@ -367,16 +436,25 @@ void Stats::html_tables(const float z_right[][10], const float z_left[][10]) con
 
 // population class public methods - constructors and accessors
 
-// population class protected methods - computers
+// population class private methods - computers
 
 // method computes population variance
 float Pop::var() const
 {
+   float s = 0;
    float m = mean(x, n);
+   for (int i = 0; i < n; i++)
+      s += pow((x[i]-m), 2);
+   return s / n;
+}
+
+// overloaded method computes population variance - mean already processed
+float Pop::var(float m) const
+{
    float s = 0;
    for (int i = 0; i < n; i++)
-      s = (i * s + pow((x[i] - m), 2)) / (i + 1);
-   return s;
+      s += pow((x[i]-m), 2);
+   return s / n;
 }
 
 // method computes population standard variation
@@ -385,29 +463,42 @@ float Pop::std() const
    return sqrt(var());
 }
 
-// Sample class public methods
-
-// load array into object
-void Sample::load(const std::vector<float>& v, int no)
+// overloaded method computes population standard deviation
+// mean already proceesed
+float Pop::std(float m) const
 {
-   Stats::load(v, no);
-   computeTables();
+   return sqrt(var(m));
 }
 
-// sample class protected methods - computers
+// sample class private methods - computers
 
-// method computes population variance
+// method computes sample variance
 float Sample::var() const
 {
-   float m = mean(x, n);
    float s = 0;
+   float m = mean(x, n);
    for (int i = 0; i < n; i++)
-      s = (i * s + pow((x[i] - m), 2)) / (i + 1);
-   return ((float)n / (float)(n - 1)) * s;
+      s += pow((x[i]-m), 2);
+   return s/(n-1);
 }
 
-// method computes population standard variation
+// overloaded method computes sample variance - mean already processed
+float Sample::var(float m) const
+{
+   float s = 0;
+   for (int i = 0; i < n; i++)
+      s += pow((x[i]-m), 2);
+   return s/(n-1);
+}
+
+// method computes sample standard deviation
 float Sample::std() const
 {
    return sqrt(var());
+}
+
+// overloaded method computes sample standard variation - mean aleady processed
+float Sample::std(float m) const
+{
+   return sqrt(var(m));
 }

@@ -2,6 +2,8 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <cmath>
+#include <ctime>
 #include "stats.hpp"
 
 const int MAX_BYTES = 1000000;
@@ -40,28 +42,43 @@ int main()
    Sample s;
    Stats* pp = &p;
    Stats* ps = &s;
-   pp->load(x, n);
-   ps->load(x, n);
+   pp->load(x);
+   ps->load(x);
+   // compute general statistics
+   float m = pp->computeMean();
+   float mdn = pp->computeMedian();
+   float popvar = pp->computeVar();
+   float popstd = sqrt(popvar);
+   float samvar = ((float)n/(float)(n-1))*popvar;
+   float samstd = sqrt(samvar);
+   float aad = pp->computeMeanDev();
+   float mad = pp->computeMedianDev();
+   float skw = pp->computeSkewness();
+   float mdnskw = pp->computeMedianSkew();
+   float lo = pp->computeMin();
+   float hi = pp->computeMax();
+   float cv = pp->computeCV();
+   // compute cumulative from central tendency tables
+   ps->computeTables();
+   float t2 = clock();
    // output
+   std::cout << "<p>processing time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds</p>\n";
    std::cout << "<ul>\n";
    std::cout << "<li>n = " << pp->getSize() << "</li>\n";
-   std::cout << "<li>mean = " << pp->computeMean() << "</li>\n";
-   std::cout << "<li>population variance = " << pp->computeVar() << "</li>\n";
-   std::cout << "<li>population standard deviation = " << pp->computeStd() << "</li>\n";
-   std::cout << "<li>population skewness = " << pp->computeSkewness() << "</li>\n";
-   std::cout << "<li>sample variance = " << ps->computeVar() << "</li>\n";
-   std::cout << "<li>sample standard deviation = " << ps->computeStd() << "</li>\n";
-   std::cout << "<li>sample skewness = " << ps->computeSkewness() << "</li>\n";
-   std::cout << "<li>minimum = " << pp->computeMin() << "</li>\n";
-   std::cout << "<li>maximum = " << pp->computeMax() << "</li>\n";
-   std::cout << "<li>median = " << pp->computeMedian() << "</li>\n";
-   std::cout << "<li>median deviation = " << pp->computeMedianDev() << "</li>\n";
-   std::cout << "<li>mean deviation = " << pp->computeMeanDev() << "</li>\n";
-   std::cout << "<li>median skewness = " << pp->computeMedianSkew() << "</li>\n";
-   std::cout << "<li>coefficient of variation = " << pp->computeCV() << "</li>\n";
+   std::cout << "<li>mean = " << m << "</li>\n";
+   std::cout << "<li>median = " << mdn << "</li>\n";
+   std::cout << "<li>population variance = " << popvar << "</li>\n";
+   std::cout << "<li>population standard deviation = " << popstd << "</li>\n";
+   std::cout << "<li>sample variance = " << samvar << "</li>\n";
+   std::cout << "<li>sample standard deviation = " << samstd << "</li>\n";
+   std::cout << "<li>mean deviation = " << aad << "</li>\n";
+   std::cout << "<li>median deviation = " << mad << "</li>\n";
+   std::cout << "<li>skewness = " << skw << "</li>\n";
+   std::cout << "<li>median skewness = " << mdnskw << "</li>\n";
+   std::cout << "<li>minimum = " << lo << "</li>\n";
+   std::cout << "<li>maximum = " << hi << "</li>\n";
+   std::cout << "<li>coefficient of variation = " << cv << "</li>\n";
    std::cout << "</ul>\n";
-   float t2 = clock();
-   std::cout << "<p>processing time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds</p>\n";
    // output cumulative from central tendency tables - we shall use sample std
    ps->htmlTables();
    printFooter();
